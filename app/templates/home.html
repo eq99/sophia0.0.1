@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  All courses here
+{% endblock %}
+
+{% block header %}
+  All course here
+{% endblock %}
+
+
+{% block nav %}
+  {{super()}}
+
+  <li><a href="/course/new">New Course</a></li>
+{% endblock %}
+
+{% block article %}
+  <h3><a href="/course/name">Math</a></h3>
+  <p>math is intesting</p>
+  <h3><a href="">Math</a></h3>
+  <p>math is intesting</p>
+  <h3><a href="">Math</a></h3>
+  <p>math is intesting</p>
+
+{% endblock %}

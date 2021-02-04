@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<head>
+  <title>{% block title %} Sen app {% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <aside>
+    <nav>
+      <ul>
+        {% block nav %}
+        <li><a href="/"> Home </a></li>
+        <li><a href="/signin">My</a></li>
+        <li><a href="/course"> Write </a></li>
+        {% endblock %}
+      </ul>
+    </nav>
+  </aside>
+
+  <header>
+    <h1>{% block header %} Title here {% endblock %}</h1>
+  </header>
+
+  <main>
+    {% block article %}
+    <p>Loading...</p>
+    {% endblock %}
+  </main>
+
+  <footer>
+    {% block footer %}
+    <h1>The footer</h1>
+    {% endblock %}
+  </footer>
+</body>

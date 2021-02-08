@@ -16,11 +16,8 @@
 {% endblock %}
 
 {% block article %}
-  <h3><a href="/course/name">Math</a></h3>
-  <p>math is intesting</p>
-  <h3><a href="">Math</a></h3>
-  <p>math is intesting</p>
-  <h3><a href="">Math</a></h3>
-  <p>math is intesting</p>
-
+  {% for course in courses %}
+  <h3><a href={{ course.url }}>{{ course.name }}</a></h3>
+  <p>{{ course.description }} </p>
+  {% endfor %}
 {% endblock %}

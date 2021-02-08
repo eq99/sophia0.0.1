@@ -1,5 +1,6 @@
 from os import  environ, path
 from dotenv import load_dotenv
+from flask_caching import Cache
 
 basedir = path.abspath(path.dirname(__file__))
 load_dotenv(path.join(basedir, '.env'))
@@ -9,6 +10,8 @@ class Base:
     SESSION_COOKIE_NAME = environ.get('SESSION_COOKIE_NAME')
     FLASK_APP = environ.get('FLASK_APP')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    CACHE_TYPE = 'simple'
+    CACHE_DEFAULT_TIMEOUT = 300
   
 class Product(Base):
     FLASK_ENV = 'production'

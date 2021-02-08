@@ -1,6 +1,15 @@
+
+
+# 20210206
+
+- login, auth
+
 # 20210204
 
 - finish the ui of course
+- create a course need user, so, create login first
+- create user finished
+- I was chuncked by flask-login
 
 # 20210203
 

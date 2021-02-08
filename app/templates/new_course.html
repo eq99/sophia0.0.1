@@ -9,10 +9,15 @@
 {% endblock %}
 
 
+{% block nav %}
+  {{super()}}
+  <li><a href="">New Chapter</a></li>
+{% endblock %}
+
 {% block article %}
-  <form action="">
-    <input type="text">
-    <input type="text">
-    <button type="submit"></button>
+  <form action="/course/new" method="POST">
+    <input type="text" name="course_name" placeholder="Course name Here">
+    <input type="text" name="course_description" placeholder="Simple description">
+    <button type="submit">Create Course</button>
   </form>
 {% endblock %}

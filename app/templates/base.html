@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <head>
   <title>{% block title %} Sen app {% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
   <aside>
@@ -10,7 +9,6 @@
         {% block nav %}
         <li><a href="/"> Home </a></li>
         <li><a href="/signin">My</a></li>
-        <li><a href="/course"> Write </a></li>
         {% endblock %}
       </ul>
     </nav>

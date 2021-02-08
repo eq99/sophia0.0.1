@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  New course
+{% endblock %}
+
+{% block header %}
+  New Chapter
+{% endblock %}
+
+
+{% block nav %}
+  {{super()}}
+{% endblock %}
+
+{% block article %}
+  <form action={{ action_url }} method="POST">
+    <input type="text" name="chapter_name" placeholder="Chapter name Here">
+    <input type="text" name="chapter_notes" placeholder="Some notes here">
+    <textarea name="chapter_content", placeholder="Chapter content here" ></textarea>
+    <button type="submit">Create Chapter</button>
+  </form>
+{% endblock %}

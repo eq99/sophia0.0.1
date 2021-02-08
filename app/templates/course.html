@@ -5,15 +5,14 @@
 {% endblock %}
 
 {% block header %}
-  Course name
+  {{ course_name }}
 {% endblock %}
 
-{% block article %}
-  <h3><a href="/course/name/chapter/name">Intoduction</a></h3>
-  <p>101</p>
-  <h3><a href="">Intoduction</a></h3>
-  <p>101</p>
-  <h3><a href="">Intoduction</a></h3>
-  <p>101</p>
 
+{% block article %}
+  {% for chapter in chapters %}
+    <h3><a href={{ chapter.url }}>{{ chapter.name }}</a></h3>
+    <p>{{ chapter.notes }}</p>
+    <a href={{chapter.new_chapter}}>Add Chapter Below</a>
+  {% endfor %}
 {% endblock %}

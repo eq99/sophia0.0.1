@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block head%}
+  <script src="https://unpkg.com/cos-js-sdk-v5/dist/cos-js-sdk-v5.min.js"></script>
+{% endblock %}
+
+{% block article %}
+<form action="/profile/edit" method="POST">
+  <table>
+    <tr>
+      <td>
+        <p>Change Nickname</p>
+      </td>
+      <td>
+        <input type="text" name="nickname" value={{current_user.nickname}} />
+      </td>
+    </tr>
+    <tr>
+      <td><p>Gender</p> </td>
+      <td>
+        <input type="radio" id="male" name="gender" value="male">
+        <label for="male">Boy</label>
+        <input type="radio" id="female" name="gender" value="female">
+        <label for="female">Girl</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <p>School</p>
+      </td>
+      <td>
+        <input type="text" name="school" value={{current_user.school}} />
+      </td>
+    </tr>
+  </table>
+  <button type="submit">Save</button>
+</form>
+
+{% endblock %}

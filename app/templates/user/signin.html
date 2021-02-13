@@ -1,5 +1,10 @@
-{% extends 'base.html' %} {% block title %} Sign in {% endblock %} {% block header %} Sign
-in {% endblock %} {% block article %}
+{% extends 'base.html' %}
+
+{% block title %} Sign in {% endblock %}
+
+{% block header %} Sign in {% endblock %}
+
+{% block article %}
 <form method="POST" action="/signin">
   <input type="text" , placeholder="phone" , name="phone" , id="phone" />
   <button id="submitPhone">获取验证码</button>

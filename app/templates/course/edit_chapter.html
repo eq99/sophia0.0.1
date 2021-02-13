@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block article %}
+  <form action={{edit_action_url}} method="POST">
+    <input type="text" name="name" value={{chapter.name}}>
+    <textarea name="content" cols="30" rows="10"> {{chapter.latest_version.content}} </textarea>
+    <input type="text" name="description" placeholder="update something">
+    <button type="submit">Save</button>
+  </form>
+{% endblock %}

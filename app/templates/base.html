@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <head>
-  <title>{% block title %} Sen app {% endblock %}</title>
+  <title>{{ title }}</title>
+  {% block head %} {% endblock %}
 </head>
 <body>
   <aside>
@@ -8,14 +9,18 @@
       <ul>
         {% block nav %}
         <li><a href="/"> Home </a></li>
-        <li><a href="/signin">My</a></li>
+        {% if current_user.is_authenticated %}
+        <li><a href="/profile">My</a></li>
+        {% else %}
+        <li><a href="/signin">Sigin</a></li>
+        {% endif %}
         {% endblock %}
       </ul>
     </nav>
   </aside>
 
   <header>
-    <h1>{% block header %} Title here {% endblock %}</h1>
+    <h1>{{ title }}</h1>
   </header>
 
   <main>

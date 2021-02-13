@@ -1,0 +1,16 @@
+
+{% extends 'base.html' %}
+
+{% block article %}
+  <img src={{ current_user.avatar_url }} alt="avatar" height="128">
+  <span> {{current_user.nickname}} </span>
+  {% if current_user.gender %}
+  <p>Boy</p>
+  {% else %}
+  <p>Girl</p>
+  {% endif %}
+  <a href="/profile/edit">Edit Your Profile</a>
+  <form action="/logout" method="get">
+    <button type="submit">Logout</button>
+  </form>
+{% endblock %}

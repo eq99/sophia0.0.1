@@ -1,16 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}
-  New course
-{% endblock %}
-
-{% block header %}
-  New Chapter
-{% endblock %}
-
-
 {% block nav %}
   {{super()}}
+  <li><a href={{contents_url}}>Contents</a></li>
 {% endblock %}
 
 {% block article %}

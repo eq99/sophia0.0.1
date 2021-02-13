@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+  <li><a href={{contents_url}}>Contents</a></li>
+{% endblock %}
+
+{% block article %}
+  {% for pr in prs %}
+    <p>{{pr.id}}| {{ pr.description}} </p>
+    <p>
+      {{ pr.created_time }}| {{pr.contributor.nickname}}
+    </p>
+    {{pr.diff|safe}}
+    <a href={{pr.accept_url}}>Accept</a>
+    <a href={{pr.reject_url}}>Reject</a>
+  {% endfor %}
+{% endblock %}

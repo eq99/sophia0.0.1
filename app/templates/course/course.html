@@ -1,18 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}
-  Course name
-{% endblock %}
-
-{% block header %}
-  {{ course_name }}
-{% endblock %}
-
 
 {% block article %}
   {% for chapter in chapters %}
     <h3><a href={{ chapter.url }}>{{ chapter.name }}</a></h3>
     <p>{{ chapter.notes }}</p>
-    <a href={{chapter.new_chapter}}>Add Chapter Below</a>
+    <a href={{chapter.new_chapter_url}}>Add Chapter Below</a>
+    <a href={{chapter.pull_requests_url}}>Pull Requests</a>
   {% endfor %}
 {% endblock %}

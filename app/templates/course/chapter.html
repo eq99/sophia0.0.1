@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+  <li><a href={{ edit_chapter_url }}>Edit chapter</a></li>
+  <li><a href={{ contents_url }}>Contents</a></li>
+{% endblock %}
+
+{% block article %}
+  {{ chapter.latest_version.content }}
+{% endblock %}
+

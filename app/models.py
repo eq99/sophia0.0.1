@@ -1,3 +1,5 @@
+from enum import Enum
+from sqlalchemy.orm import backref, defaultload
 from plugins import db
 from flask_login import UserMixin
 
@@ -7,17 +9,18 @@ course_managers = db.Table('course_managers',
     db.Column('is_present', db.Boolean)
 )
 
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(32), index=True, unique=True, nullable=False)
     avatar_url = db.Column(db.String)
+    gender = db.Column(db.Boolean, default=False) # True: male; Flase: female
+    reputation = db.Column(db.Float, default=0.0)
     school = db.Column(db.String)
     phone = db.Column(db.String(11), index=True, unique=True, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     created_time = db.Column(db.DateTime)
     managed_courses = db.relationship('Course', secondary=course_managers, back_populates='managers')
-    contributes = db.relationship('Version', back_populates='contributor')
+    contributes = db.relationship('Version', backref='contributor')
 
     def is_active(self):
         return self.is_active
@@ -37,14 +40,17 @@ class User(UserMixin, db.Model):
 class Version(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     contributor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    contributor = db.relationship('User', back_populates='contributes')
     description = db.Column(db.String)
     created_time = db.Column(db.DateTime)
-    is_accepted = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String) # 
+    # `status` should be enum, but it's too complecated, use string instead.
+    # 'OPEN': when a new changed is created
+    # 'ACCEPTED': change is accepted by course manager
+    # 'REJECTED': change is rejected by course manager
     content = db.Column(db.Text)
     previous_version_id = db.Column(db.Integer, db.ForeignKey('version.id'))
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'))
-    chapter = db.relationship('Chapter', back_populates='latest_version')# dumb
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
 
     def __repr__(self) -> str:
         return f'<Version {self.created_time}>'
@@ -56,7 +62,7 @@ class Chapter(db.Model):
     notes = db.Column(db.String)
     created_time = db.Column(db.DateTime)
     updated_time = db.Column(db.DateTime)
-    latest_version = db.relationship('Version', back_populates='chapter', uselist=False)
+    latest_version = db.relationship('Version', backref='chapter', uselist=False)
     previous_chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'))
     #previous_chapter = db.relationship('Chapter', back_populates='next_chapter')
     #next_chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'))

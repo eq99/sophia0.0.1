@@ -1,5 +1,10 @@
 
 
+# 20210208
+
+- create course finished.
+- todo: user profile.
+
 # 20210206
 
 - login, auth

@@ -1,10 +1,11 @@
 from datetime import datetime
-from difflib import HtmlDiff, unified_diff
+from difflib import unified_diff
 from flask import(
     Blueprint,
     render_template,
     request,
-    flash
+    flash,
+    jsonify
 )
 
 from flask_login import(
@@ -145,19 +146,10 @@ def edit_chapter(course_id, chapter_id):
     '''
     chapter = Chapter.query.get(chapter_id)
     if request.method == 'POST':
-        name = request.form.get('name')
-        content = request.form.get('content')
-        description = request.form.get('description')
-        if name != chapter.name:
-            # name changed
-            chapter_with_name = Chapter.query.filter(db.and_(Chapter.course_id==course_id, Chapter.name==name)).first()
-            if chapter_with_name:
-                # solve conflict
-                name=f'{name}_1'
-            # update name of chapter
-            chapter.name = name
+        content = request.form.get('edit_content')
+        description = request.form.get('edit_description')
         version = Version(
-            description=description or f'update {chapter.name}',
+            description=description or '做了一些修改',
             created_time=datetime.now(),
             content=content,
             status='OPEN',
@@ -168,7 +160,10 @@ def edit_chapter(course_id, chapter_id):
         user.contributes.append(version)
         db.session.add(version)
         db.session.commit()
-        return redirect(f'/course/{course_id}/chapter/{chapter_id}')
+        return jsonify(
+            message="提交成功",
+            chapter_url=f'/course/{course_id}/chapter/{chapter_id}'
+        )
     else:
         return render_template(
             'edit_chapter.html',
@@ -194,7 +189,7 @@ def pull_requests(course_id, chapter_id):
             'accept_url': f'/course/{course_id}/chapter/{chapter_id}/prs/{version.id}/accept',
             'reject_url': f'/course/{course_id}/chapter/{chapter_id}/prs/{version.id}/reject',
             'contributor': version.contributor,
-            'created_time': version.created_time,
+            'created_time': version.created_time.strftime("%Y %m %d %H:%M:%S"),
             'description': version.description,
             'diff': get_diff(latest_version.content, version.content)
         })
@@ -238,6 +233,7 @@ def new_chapter(course_id, chapter_id):
         new_chapter_name = request.form.get('chapter_name')
         new_chapter_notes = request.form.get('chapter_notes')
         new_chapter_content = request.form.get('chapter_content')
+        print(f'chapter content: {new_chapter_content}')
         course = Course.query.get(course_id)
         current_chapter = Chapter.query.get(chapter_id)
 
@@ -251,7 +247,7 @@ def new_chapter(course_id, chapter_id):
             contributor_id=current_user.id,
             description=f'create chapter {new_chapter_name}.',
             created_time=datetime.now(),
-            is_accepted=True,
+            status='ACCEPTED',
             content=new_chapter_content
         )
 
@@ -268,11 +264,17 @@ def new_chapter(course_id, chapter_id):
         db.session.commit()
         # get id of the new chapter
         new_chapter = Chapter.query.filter(Chapter.name == new_chapter_name).first()
-        return redirect(f'/course/{course_id}/chapter/{new_chapter.id}')
+        # we use `new_chapter_url` for `window.location.href` to redirect after ajax
+        # see: https://stackoverflow.com/questions/47122295/flask-how-to-redirect-to-new-page-after-ajax-call
+        return jsonify(
+            code=200,
+            new_chapter_url=f'/course/{course_id}/chapter/{new_chapter.id}'
+        )
+
 
     else:
         return render_template(
             'new_chapter.html',
-            action_url=f'/course/{course_id}/chapter/{chapter_id}/new'
+            new_chapter_url=f'/course/{course_id}/chapter/{chapter_id}/new'
         )
 

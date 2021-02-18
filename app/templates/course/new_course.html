@@ -1,23 +1,27 @@
 {% extends 'base.html' %}
 
-{% block title %}
-  New course
-{% endblock %}
-
-{% block header %}
-  New Course
-{% endblock %}
-
-
-{% block nav %}
-  {{super()}}
-  <li><a href="">New Chapter</a></li>
-{% endblock %}
-
 {% block article %}
-  <form action="/course/new" method="POST">
+<form action="/course/new" method="POST">
+  <div class="form-group">
+    <label class="col-sm-12 col-form-label pb-3">请输入将要创建的课程名称，如果输入的课程名称已经存在，新的课程将不会被创建。</label>
+    <div class="col-sm-12">
+      <input type="text" class="form-control" name="course_name" placeholder="课程名称">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-12 col-form-label pb-3">用一句话描述你的课程，这句话会被用作课程简介。</label>
+    <div class="col-sm-12">
+      <input type="text" class="form-control" name="course_description" placeholder="课程描述">
+    </div>
+  </div>
+  <div class="form-group">
+  <button type="submit" class="btn btn-primary col-sm-12">创建课程</button>
+  </div>
+</form>
+
+  <!-- <form action="/course/new" method="POST">
     <input type="text" name="course_name" placeholder="Course name Here">
     <input type="text" name="course_description" placeholder="Simple description">
     <button type="submit">Create Course</button>
-  </form>
+  </form> -->
 {% endblock %}

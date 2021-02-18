@@ -1,15 +1,73 @@
-{% extends 'base.html' %}
+{% extends 'course.html' %}
 
-{% block nav %}
-  {{super()}}
-  <li><a href={{contents_url}}>Contents</a></li>
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">
 {% endblock %}
 
 {% block article %}
-  <form action={{ action_url }} method="POST">
-    <input type="text" name="chapter_name" placeholder="Chapter name Here">
-    <input type="text" name="chapter_notes" placeholder="Some notes here">
-    <textarea name="chapter_content", placeholder="Chapter content here" ></textarea>
-    <button type="submit">Create Chapter</button>
-  </form>
+<form>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <small id="passwordHelpBlock" class="form-text text-muted pb-3">
+        请输入将要创建的课程章节名称，如果输入的课程章节名称已经在本课程存在，新的章节课程将不会被创建。
+      </small>
+      <input type="text" class="form-control" id="chapter_name" name="chapter_name" placeholder="章节名称">
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <small id="passwordHelpBlock" class="form-text text-muted pb-3">
+        用一句话描述这个章节的内容，这句话会被用作课程章节简介。
+      </small>
+      <input type="text" class="form-control" id="chapter_notes" name="chapter_notes" placeholder="章节简介">
+    </div>
+  </div>
+  <div class="form-group">
+    <textarea class="form-control" id="Editor" name="chapter_content"></textarea>
+  </div>
+  <div class="form-group">
+  <button type="submit" class="btn btn-primary" id="submitButton">创建新章节</button>
+  </div>
+</form>
+<script>
+  const editor = new SimpleMDE({
+    element: document.getElementById("Editor"),
+    placeholder: "输入正文",
+    hideIcons: ["side-by-side", "fullscreen"],
+    spellChecker: false,
+    renderingConfig: {
+		  singleLineBreaks: false,
+		  codeSyntaxHighlighting: true,
+	  },
+    insertTexts: {
+      image: ["![","]()"],
+    },
+   });
+  
+  document.getElementById("submitButton").addEventListener("click", function (e) {
+    const chapter_name = document.getElementById("chapter_name").value;
+    const chapter_notes = document.getElementById("chapter_notes").value;
+    let formData = new FormData();
+    formData.append('chapter_name', chapter_name);
+    formData.append('chapter_notes', chapter_notes);
+    formData.append('chapter_content', editor.value());
+    const url = "{{new_chapter_url}}";
+    fetch(url, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {return response.json()})
+    .then(data => {
+      console.log(data);
+      window.location.href = data.new_chapter_url;
+    })
+    .catch((error) => {
+      console.log('Error:', error);
+    });
+    
+  }); 
+</script>
 {% endblock %}

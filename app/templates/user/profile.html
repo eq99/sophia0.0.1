@@ -1,16 +1,88 @@
-
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block nav %}
+<li class="nav-item">
+  <a class="nav-link" href="/profile/edit">
+    <svg
+      width="1.3rem"
+      aria-hidden="true"
+      focusable="false"
+      data-prefix="fas"
+      data-icon="user-edit"
+      class="svg-inline--fa fa-user-edit fa-w-20"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 640 512"
+    >
+      <path
+        fill="currentColor"
+        d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h274.9c-2.4-6.8-3.4-14-2.6-21.3l6.8-60.9 1.2-11.1 7.9-7.9 77.3-77.3c-24.5-27.7-60-45.5-99.9-45.5zm45.3 145.3l-6.8 61c-1.1 10.2 7.5 18.8 17.6 17.6l60.9-6.8 137.9-137.9-71.7-71.7-137.9 137.8zM633 268.9L595.1 231c-9.3-9.3-24.5-9.3-33.8 0l-37.8 37.8-4.1 4.1 71.8 71.7 41.8-41.8c9.3-9.4 9.3-24.5 0-33.9z"
+      ></path>
+    </svg>
+    编辑资料
+  </a>
+</li>
+<li class="nav-item list-group-item-action list-group-item-danger">
+  <a class="nav-link text-danger" href="/logout">
+    <svg
+      width="1.3rem"
+      aria-hidden="true"
+      focusable="false"
+      data-prefix="fas"
+      data-icon="sign-out-alt"
+      class="svg-inline--fa fa-sign-out-alt fa-w-16"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+    >
+      <path
+        fill="currentColor"
+        d="M497 273L329 441c-15 15-41 4.5-41-17v-96H152c-13.3 0-24-10.7-24-24v-96c0-13.3 10.7-24 24-24h136V88c0-21.4 25.9-32 41-17l168 168c9.3 9.4 9.3 24.6 0 34zM192 436v-40c0-6.6-5.4-12-12-12H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h84c6.6 0 12-5.4 12-12V76c0-6.6-5.4-12-12-12H96c-53 0-96 43-96 96v192c0 53 43 96 96 96h84c6.6 0 12-5.4 12-12z"
+      ></path>
+    </svg>
+    退出登录
+  </a>
+</li>
+{% endblock %}
 
 {% block article %}
-  <img src={{ current_user.avatar_url }} alt="avatar" height="128">
-  <span> {{current_user.nickname}} </span>
-  {% if current_user.gender %}
-  <p>Boy</p>
-  {% else %}
-  <p>Girl</p>
-  {% endif %}
-  <a href="/profile/edit">Edit Your Profile</a>
-  <form action="/logout" method="get">
-    <button type="submit">Logout</button>
-  </form>
+<div class="row">
+  <img class="float-left" src={{current_user.avatar_url}} alt="avatar" height="128" />
+  <div class="col">
+    <h4>{{current_user.nickname}}</h4>
+    {% if current_user.gender %}
+    <svg
+      width="1rem"
+      aria-hidden="true"
+      focusable="false"
+      data-prefix="fas"
+      data-icon="mars"
+      class="svg-inline--fa fa-mars fa-w-12"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 384 512"
+    >
+      <path
+        fill="currentColor"
+        d="M372 64h-79c-10.7 0-16 12.9-8.5 20.5l16.9 16.9-80.7 80.7c-22.2-14-48.5-22.1-76.7-22.1C64.5 160 0 224.5 0 304s64.5 144 144 144 144-64.5 144-144c0-28.2-8.1-54.5-22.1-76.7l80.7-80.7 16.9 16.9c7.6 7.6 20.5 2.2 20.5-8.5V76c0-6.6-5.4-12-12-12zM144 384c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"
+      ></path>
+    </svg>
+    {% else %}
+    <svg
+      width="1rem"
+      aria-hidden="true"
+      focusable="false"
+      data-prefix="fas"
+      data-icon="venus"
+      class="svg-inline--fa fa-venus fa-w-9"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 288 512"
+    >
+      <path
+        fill="currentColor"
+        d="M288 176c0-79.5-64.5-144-144-144S0 96.5 0 176c0 68.5 47.9 125.9 112 140.4V368H76c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h36v36c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12v-36h36c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-36v-51.6c64.1-14.5 112-71.9 112-140.4zm-224 0c0-44.1 35.9-80 80-80s80 35.9 80 80-35.9 80-80 80-80-35.9-80-80z"
+      ></path>
+    </svg>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

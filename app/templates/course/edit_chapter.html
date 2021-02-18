@@ -1,10 +1,66 @@
-{% extends 'base.html' %}
+{% extends 'course.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">
+{% endblock %}
 
 {% block article %}
-  <form action={{edit_action_url}} method="POST">
-    <input type="text" name="name" value={{chapter.name}}>
-    <textarea name="content" cols="30" rows="10"> {{chapter.latest_version.content}} </textarea>
-    <input type="text" name="description" placeholder="update something">
-    <button type="submit">Save</button>
-  </form>
+<form>
+  <div class="form-group">
+    <textarea class="form-control" id="Editor"></textarea>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <small id="passwordHelpBlock" class="form-text text-muted pb-3">
+        用一句话描述你修改的理由, 这有利于课程管理员更好的了解你做的修改，默认值为 “做了一些修改”。
+      </small>
+      <input type="text" class="form-control" id="edit_description" placeholder="做了一些修改">
+    </div>
+  </div>
+  <div class="form-group">
+  <button type="submit" class="btn btn-primary" id="submitButton">提交修改</button>
+  </div>
+</form>
+<script>
+  const editor = new SimpleMDE({
+    element: document.getElementById("Editor"),
+    hideIcons: ["side-by-side", "fullscreen"],
+    spellChecker: false,
+    renderingConfig: {
+		  singleLineBreaks: false,
+		  codeSyntaxHighlighting: true,
+	  },
+    insertTexts: {
+      image: ["![","]()"],
+    },
+   });
+  const old_chapter_content=`{{chapter.latest_version.content}}`;
+  editor.value(old_chapter_content);
+
+  document.getElementById("submitButton").addEventListener("click", function (e) {
+    const edit_description = document.getElementById("edit_description").value;
+    let formData = new FormData();
+    formData.append('edit_description', edit_description);
+    formData.append('edit_content', editor.value());
+    const url = "{{edit_action_url}}";
+    fetch(url, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {return response.json()})
+    .then(data => {
+      console.log(data);
+      window.location.href = data.chapter_url;
+      alert(data.message);
+    })
+    .catch((error) => {
+      console.log('Error:', error);
+    });
+    
+  }); 
+</script>
 {% endblock %}
+

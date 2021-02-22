@@ -1,3 +1,8 @@
+# 20210219
+- learn jenkins 
+- write deploy.py
+- tomorrow: write test suits
+
 # 20210216
 - write css
 

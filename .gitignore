@@ -1,3 +1,6 @@
+# The dev env is different from production
+migrations/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

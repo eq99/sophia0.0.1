@@ -1,12 +1,9 @@
+from os import environ
 from flask import Flask
 from plugins import db, cache, login_manager
-from app.models import User
 from app.home import home
 from app.course import (
     course_bp,
-    course,
-    chapter,
-    new_course
 )
 
 from app.user import (
@@ -16,7 +13,10 @@ from app.user import (
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object('config.Dev')
+    if environ.get('FLASK_ENV') == 'development':
+        app.config.from_object('config.Dev')
+    else:
+        app.config.from_object('config.Production')
 
     db.init_app(app)
     cache.init_app(app)

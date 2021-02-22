@@ -17,6 +17,6 @@ def home():
         })
     return render_template(
         'home.html',
-        title='Explore Courses',
+        title='Book list',
         courses=courses
         )

@@ -9,7 +9,9 @@
 
 {% block article %}
   {% for course in courses %}
-  <h3><a href={{ course.url }}>{{ course.name }}</a></h3>
-  <p>{{ course.description }} </p>
+  <div class="card border-light mb-4">
+    <h3><a href={{ course.url }}>{{ course.name }}</a></h3>
+    <p>{{ course.description }} </p>
+  </div>
   {% endfor %}
 {% endblock %}

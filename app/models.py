@@ -17,7 +17,10 @@ class User(UserMixin, db.Model):
     reputation = db.Column(db.Float, default=0.0)
     school = db.Column(db.String)
     phone = db.Column(db.String(11), index=True, unique=True, nullable=False)
-    is_active = db.Column(db.Boolean, default=True)
+
+    # this field can also be used as `role`
+    status = db.Column(db.String) # 'NORMAL', 'ADMIN', 'DELETED', 'BLOCKED'
+    
     created_time = db.Column(db.DateTime)
     managed_courses = db.relationship('Course', secondary=course_managers, back_populates='managers')
     contributes = db.relationship('Version', backref='contributor')
@@ -35,15 +38,15 @@ class User(UserMixin, db.Model):
         return self.id
 
     def __repr__(self) -> str:
-        return f'User< {self.nickname}>'
+        return f'User< {self.id} {self.nickname}>'
 
 class Version(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     contributor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     description = db.Column(db.String)
     created_time = db.Column(db.DateTime)
-    status = db.Column(db.String) # 
-    # `status` should be enum, but it's too complecated, use string instead.
+
+    status = db.Column(db.String) # 'OPEN', 'ACCEPTED', 'REJECTED'
     # 'OPEN': when a new changed is created
     # 'ACCEPTED': change is accepted by course manager
     # 'REJECTED': change is rejected by course manager
@@ -63,12 +66,14 @@ class Chapter(db.Model):
     created_time = db.Column(db.DateTime)
     updated_time = db.Column(db.DateTime)
     latest_version = db.relationship('Version', backref='chapter', uselist=False)
+
+    # The following two fields defines the chapter order
+    # see https://docs.sqlalchemy.org/en/14/orm/self_referential.html
     previous_chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'))
-    #previous_chapter = db.relationship('Chapter', back_populates='next_chapter')
-    #next_chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'))
-    #next_chapter = db.relationship('Chapter', back_populates='previous_chapter')
+    next_chapter = db.relationship('Chapter', uselist=False)
+
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
-    course = db.relationship('Course', back_populates='first_chapter') # dumb
+    course = db.relationship('Course', back_populates='first_chapter') # dumbfl
 
     def __repr__(self) -> str:
         return f'<Chapter {self.name}>'

@@ -2,6 +2,7 @@
 <html lang="zh-cn">
   <head>
     <title>{{ title }}</title>
+    <link rel="shortcut icon" href={{ url_for('static', filename='favicon.ico') }} type="image/x-icon">
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -16,7 +17,8 @@
     {% block head %} {% endblock %}
   </head>
   <body>
-    <header class="fixed-top navbar-light bg-light d-flex justify-content-center">
+    <header class="fixed-top navbar-light bg-light d-flex justify-content-center align-items-center">
+      <img height="48px" class="mr-5" src={{ url_for('static', filename='logo.jpg') }} >
       <h3>{{ title }}</h3>
     </header>
 
@@ -101,7 +103,7 @@
           </ul>
           <footer style="margin-top: 2rem">
             <p class="text-muted" style="font-size: 0.7rem">
-              © 2021 搞学习 • 京 ICP 备 13052xxx 号 - 1
+              © 2021 学霸网 • 京 ICP 备 13052xxx 号 - 1
             </p>
           </footer>
         </div>

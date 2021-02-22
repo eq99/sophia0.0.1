@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
 
-
 {% block article %}
   {% for chapter in chapters %}
+  <div class="card p-4 mb-4">
     <h3><a href={{ chapter.url }}>{{ chapter.name }}</a></h3>
     <p>{{ chapter.notes }}</p>
-    <a href={{chapter.new_chapter_url}}>Add Chapter Below</a>
-    <a href={{chapter.pull_requests_url}}>Pull Requests</a>
+    <div class="row">
+      <a href={{chapter.new_chapter_url}} class="btn btn-light ml-2">新建一章</a>
+      <a href={{chapter.pull_requests_url}} class="btn btn-light ml-2">管理修改</a>
+      <a href={{chapter.edit_name_url}} class="btn btn-light ml-2">修改标题</a>
+    </div>
+  </div>
   {% endfor %}
 {% endblock %}

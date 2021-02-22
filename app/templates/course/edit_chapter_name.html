@@ -1,0 +1,25 @@
+{% extend base.html %}
+
+{% block article %}
+<form>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <small id="passwordHelpBlock" class="form-text text-muted pb-3">
+        请输入章节名称，如果输入的课程章节名称已经在本课程存在，修改无效。
+      </small>
+      <input type="text" class="form-control" id="chapter_name" name="chapter_name" placeholder="章节名称">
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <small id="passwordHelpBlock" class="form-text text-muted pb-3">
+        修改章节简介。
+      </small>
+      <input type="text" class="form-control" id="chapter_notes" name="chapter_notes" placeholder="章节简介">
+    </div>
+  </div>
+  <div class="form-group">
+  <button type="submit" class="btn btn-primary" id="submitButton">保存修改</button>
+  </div>
+</form>
+{% endblock %}

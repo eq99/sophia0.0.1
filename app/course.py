@@ -1,5 +1,6 @@
 from datetime import datetime
 from difflib import unified_diff
+import re
 from flask import(
     Blueprint,
     render_template,
@@ -43,16 +44,28 @@ def course(course_id):
     '''
 
     course = Course.query.get(course_id)
-    chapters_raw = Chapter.query.filter(Chapter.course_id == course_id).all()
+    current_chapter = course.first_chapter
+    #chapters_raw = Chapter.query.filter(Chapter.course_id == course_id).all()
     chapters=[]
-    for chapter_raw in chapters_raw:
+    while current_chapter:
         chapters.append({
-            'name': chapter_raw.name,
-            'notes': chapter_raw.notes,
-            'url': f'/course/{course_id}/chapter/{chapter_raw.id}',
-            'new_chapter_url': f'/course/{course_id}/chapter/{chapter_raw.id}/new',
-            'pull_requests_url': f'/course/{course_id}/chapter/{chapter_raw.id}/prs',
+            'name': current_chapter.name,
+            'notes': current_chapter.notes,
+            'url': f'/course/{course_id}/chapter/{current_chapter.id}',
+            'new_chapter_url': f'/course/{course_id}/chapter/{current_chapter.id}/new',
+            'pull_requests_url': f'/course/{course_id}/chapter/{current_chapter.id}/prs',
+            'edit_name_url': f'/course/{course_id}/chapter/{current_chapter.id}/edit'
         })
+        current_chapter = current_chapter.next_chapter
+    # for chapter_raw in chapters_raw:
+    #     chapters.append({
+    #         'name': chapter_raw.name,
+    #         'notes': chapter_raw.notes,
+    #         'url': f'/course/{course_id}/chapter/{chapter_raw.id}',
+    #         'new_chapter_url': f'/course/{course_id}/chapter/{chapter_raw.id}/new',
+    #         'pull_requests_url': f'/course/{course_id}/chapter/{chapter_raw.id}/prs',
+    #         'edit_name_url': f'/course/{course_id}/chapter/{chapter_raw.id}/edit'
+    #     })
     return render_template(
         'course.html',
         title=course.name,
@@ -257,20 +270,20 @@ def new_chapter(course_id, chapter_id):
             created_time=datetime.now(),
             updated_time=datetime.now(),
             latest_version=latest_version,
-            previous_chapter_id=current_chapter.id,
+            next_chapter=current_chapter.next_chapter,
             course_id=course.id
         )
+        current_chapter.next_chapter = new_chapter
         db.session.add(new_chapter)
         db.session.commit()
         # get id of the new chapter
-        new_chapter = Chapter.query.filter(Chapter.name == new_chapter_name).first()
+        # new_chapter = Chapter.query.filter(Chapter.name == new_chapter_name).first()
         # we use `new_chapter_url` for `window.location.href` to redirect after ajax
         # see: https://stackoverflow.com/questions/47122295/flask-how-to-redirect-to-new-page-after-ajax-call
         return jsonify(
             code=200,
-            new_chapter_url=f'/course/{course_id}/chapter/{new_chapter.id}'
+            new_chapter_url=f'/course/{course_id}'
         )
-
 
     else:
         return render_template(

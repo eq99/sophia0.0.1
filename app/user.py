@@ -143,3 +143,35 @@ def edit_profile():
 def logout():
     logout_user()
     return redirect('/')
+
+@user_bp.route('/user/manage')
+def user_manage():
+    if request.method == 'POST':
+        pass
+    else:
+        users = User.query.all()
+        
+        return render_template(
+            'user_manage.html',
+            title =  '用户管理',
+            users = users
+        )
+
+@user_bp.route('/user/manage/freeze/<user_id>')
+def user_freeze(user_id):
+    user = User.query.get(user_id)
+    user.status = 'FREEZE'
+    db.session.commit()
+    return jsonify(
+        msg = 'success'
+    )
+
+
+@user_bp.route('/user/manage/normal/<user_id>')
+def user_normal(user_id):
+    user = User.query.get(user_id)
+    user.status = 'NORMAL'
+    db.session.commit()
+    return jsonify(
+        msg = 'success'
+    )

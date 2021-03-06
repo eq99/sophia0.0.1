@@ -1,7 +1,7 @@
-# The dev env is different from production
-migrations/
-
 # Byte-compiled / optimized / DLL files
+.vscode/
+.idea/
+
 __pycache__/
 *.py[cod]
 *$py.class

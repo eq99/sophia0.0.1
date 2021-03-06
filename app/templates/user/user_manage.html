@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block article %}
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">#id</th>
+      <th scope="col">昵称</th>
+      <th scope="col">电话</th>
+      <th scope="col">声望值</th>
+      <th scope="col">修改状态</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <th scope="row">{{user.id}}</th>
+      <td>{{user.nickname}} </td>
+      <td>{{user.phone}} </td>
+      <td>{{user.reputation}}</td>
+      <td>
+        <div class="dropdown show">
+          <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{user.status}}
+          </a>
+        
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            {% if user.status != "FREEZE" -%}
+            <a class="dropdown-item btn-warning" id={{"{}".format(user.id)}} onclick="handleFreeze(event)">冻结</a>
+            {% endif %}
+            {% if user.status != "NORMAL" %}
+            <a class="dropdown-item btn-info" id={{"{}".format(user.id)}} onclick="handleNormal(event)">解冻</a>
+            {% endif %}
+          </div>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+
+{% block script %}
+  <script>
+    function handleFreeze(e){
+      e.preventDefault();
+      
+      const freezeURL = `/user/manage/freeze/${e.target.id}`;
+      console.log(freezeURL);
+      fetch(freezeURL)
+      .then(response => {return response.json()})
+      .then(data => {
+        alert('修改成功');
+      })
+      .catch((error) => {
+        alert('修改失败');
+      });
+    }
+    function handleNormal(e){
+      e.preventDefault();
+      
+      const normalURL = `/user/manage/normal/${e.target.id}`;
+      fetch(normalURL)
+      .then(response => {return response.json()})
+      .then(data => {
+        alert('修改成功');
+      })
+      .catch((error) => {
+        alert('修改失败');
+      });
+    }
+  </script>
+{% endblock %}

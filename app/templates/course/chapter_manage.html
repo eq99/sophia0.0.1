@@ -1,0 +1,95 @@
+{% extends 'course.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">
+{% endblock %}
+
+{% block article %}
+<form>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <small id="passwordHelpBlock" class="form-text text-muted pb-3">
+        请输入章节名称，如果输入的课程章节名称已经在本课程存在，修改无效。
+      </small>
+      <input type="text" class="form-control" id="chapter_name" name="chapter_name" value="{{chapter.name}}">
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <small id="passwordHelpBlock" class="form-text text-muted pb-3">
+        修改章节简介。
+      </small>
+      <input type="text" class="form-control" id="chapter_notes" name="chapter_notes" value="{{chapter.notes}}">
+    </div>
+  </div>
+  <div class="form-group">
+    <textarea class="form-control" id="Editor"></textarea>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <small id="passwordHelpBlock" class="form-text text-muted pb-3">
+        用一句话描述你修改的理由, 这有利于课程管理员更好的了解你做的修改，默认值为 “做了一些修改”。
+      </small>
+      <input type="text" class="form-control" id="edit_description" placeholder="做了一些修改">
+    </div>
+  </div>
+  <div class="form-group">
+  <button type="submit" class="btn btn-primary" id="submitButton">提交修改</button>
+  </div>
+</form>
+<script>
+  const editor = new SimpleMDE({
+    element: document.getElementById("Editor"),
+    hideIcons: ["side-by-side", "fullscreen"],
+    spellChecker: false,
+    renderingConfig: {
+		  singleLineBreaks: false,
+		  codeSyntaxHighlighting: true,
+	  },
+    insertTexts: {
+      image: ["![","]()"],
+    },
+   });
+  const old_chapter_content=`{{chapter.latest_version.content}}`;
+  editor.value(old_chapter_content);
+
+  document.getElementById("submitButton").addEventListener("click", function (e) {
+    e.preventDefault();
+    const chapter_name = document.getElementById("chapter_name").value;
+    const chapter_notes = document.getElementById("chapter_notes").value;
+    const edit_description = document.getElementById("edit_description").value;
+    let formData = new FormData();
+    const old_name = `{{chapter.name}}`;
+    const old_notes = `{{chapter.notes}}`;
+
+    if (chapter_name !== old_name){
+      formData.append('chapter_name', chapter_name);
+    }
+    if (chapter_notes !== old_notes){
+      formData.append('chapter_notes', chapter_notes);
+    }
+    formData.append('edit_description', edit_description);
+    formData.append('edit_content', editor.value());
+    const url = `{{"/course/{}/chapter/{}/manage".format(course_id, chapter.id)}}`;
+    console.log(url);
+    fetch(url, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {return response.json()})
+    .then(data => {
+      console.log(data);
+      window.location.href = `{{"/course/{}/chapter/{}".format(course_id, chapter.id)}}`;
+      alert(data.message);
+    })
+    .catch((error) => {
+      alert('Error:', error);
+    });
+    
+  }); 
+</script>
+{% endblock %}
+

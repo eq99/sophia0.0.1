@@ -19,7 +19,7 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(11), index=True, unique=True, nullable=False)
 
     # this field can also be used as `role`
-    status = db.Column(db.String) # 'NORMAL', 'ADMIN', 'DELETED', 'BLOCKED'
+    status = db.Column(db.String) # 'NORMAL', 'ADMIN', 'FREEZE'
     
     created_time = db.Column(db.DateTime)
     managed_courses = db.relationship('Course', secondary=course_managers, back_populates='managers')
@@ -65,13 +65,12 @@ class Chapter(db.Model):
     notes = db.Column(db.String)
     created_time = db.Column(db.DateTime)
     updated_time = db.Column(db.DateTime)
-    latest_version = db.relationship('Version', backref='chapter', uselist=False)
+    latest_version_id = db.Column(db.Integer, db.ForeignKey('Version.id'))
 
     # The following two fields defines the chapter order
     # see https://docs.sqlalchemy.org/en/14/orm/self_referential.html
     previous_chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'))
     next_chapter = db.relationship('Chapter', uselist=False)
-
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     course = db.relationship('Course', back_populates='first_chapter') # dumbfl
 

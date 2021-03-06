@@ -3,6 +3,7 @@ from flask_migrate import Migrate, MigrateCommand
 from app import create_app
 from plugins import db
 import pytest
+from app.models import *
 
 app = create_app()
 manager = Manager(app=app)

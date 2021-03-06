@@ -1,3 +1,15 @@
+
+# 20210227
+
+
+# 20210226
+
+- upload a picture to cos :heavy_check_mark:
+
+
+# 20210225
+- email:https://www.bilibili.com/video/BV1Ey4y117Mf?p=38
+
 # 20210219
 - learn jenkins 
 - write deploy.py

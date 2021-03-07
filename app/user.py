@@ -34,7 +34,7 @@ user_bp = Blueprint('user_bp', __name__, template_folder='./templates/user')
 # here is an example:
 # https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 # Note: remenber config `SESSION_COOKIE_NAME` well.
-login_manager.login_view='/signin'
+login_manager.login_view='/login'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -43,20 +43,24 @@ def load_user(user_id):
     else:
         return None
 
-@user_bp.route('/smscode', methods=['GET', 'POST'])
-def smscode():
+@user_bp.route('/code', methods=['GET', 'POST'])
+def sendcode():
     '''
     Send SMS code using to `phone`.
     '''
     if request.method == 'POST':
-        phone = request.form['phone']
-        if phone is not None:
-            print(f'phone:{phone}')
-            cache.set(phone, '1234')
+        email = request.form.get('email')
+        if email is None:
             return jsonify(
-                message=f'get phone number {phone}.',
-                code=200
+                message='Error',
+                code=206
             )
+        print(email)
+        cache.set(email, '1234')
+        return jsonify(
+            message=f'Success{email}',
+            code=200
+        )
 
 def generate_avatar():
     '''
@@ -65,8 +69,8 @@ def generate_avatar():
     res = urlopen('http://api.btstu.cn/sjtx/api.php?lx=c1&format=json')
     return json.loads(res.read())['imgurl']
 
-@user_bp.route('/signin', methods=['GET', 'POST'])
-def signin():
+@user_bp.route('/register', methods=['GET', 'POST'])
+def register():
     '''
     Register: when the user is not registerted.
     Sigin in: when the user is already registed.
@@ -96,8 +100,19 @@ def signin():
                 )
 
     return render_template(
-        'signin.html',
-        title='Sign In'
+        'register.html',
+        title='欢迎加入'
+        )
+
+@user_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # login
+        pass
+    else:
+        return render_template(
+            'login.html',
+            title='欢迎回来'
         )
 
 @user_bp.route('/profile')

@@ -12,7 +12,7 @@ from app.user import (
 
 
 def create_app():
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, static_url_path="", static_folder="static", instance_relative_config=True)
     if environ.get('FLASK_ENV') == 'development':
         app.config.from_object('config.Dev')
     else:

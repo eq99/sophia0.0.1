@@ -13,4 +13,5 @@ This is only a skelon project, any fucntion is not implement.
 - only defines the folder structure
 - only function name, doc is write.
 
- 
+slide verify :
+https://www.jq22.com/jquery-info19009

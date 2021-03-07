@@ -3,11 +3,18 @@ from sqlalchemy.orm import backref, defaultload
 from plugins import db
 from flask_login import UserMixin
 
-course_managers = db.Table('course_managers',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('course_id', db.Integer, db.ForeignKey('course.id'), primary_key=True),
-    db.Column('is_present', db.Boolean)
-)
+
+# class CourseManager(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
+#     is_present =  db.Column(db.Boolean)
+
+# course_managers = db.Table('course_managers',
+#     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+#     db.Column('course_id', db.Integer, db.ForeignKey('course.id'), primary_key=True),
+#     db.Column('is_present', db.Boolean)
+# )
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,7 +29,7 @@ class User(UserMixin, db.Model):
     status = db.Column(db.String) # 'NORMAL', 'ADMIN', 'FREEZE'
     
     created_time = db.Column(db.DateTime)
-    managed_courses = db.relationship('Course', secondary=course_managers, back_populates='managers')
+    # managed_courses = db.relationship('Course', secondary=course_managers, back_populates='managers')
     contributes = db.relationship('Version', backref='contributor')
 
     def is_active(self):
@@ -65,7 +72,7 @@ class Chapter(db.Model):
     notes = db.Column(db.String)
     created_time = db.Column(db.DateTime)
     updated_time = db.Column(db.DateTime)
-    latest_version_id = db.Column(db.Integer, db.ForeignKey('Version.id'))
+    latest_version_id = db.Column(db.Integer, db.ForeignKey('version.id'))
 
     # The following two fields defines the chapter order
     # see https://docs.sqlalchemy.org/en/14/orm/self_referential.html
@@ -81,7 +88,8 @@ class Chapter(db.Model):
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True, nullable=False)
-    managers = db.relationship('User', secondary=course_managers, back_populates='managed_courses')
+    # managers = db.relationship('User', secondary=course_managers, back_populates='managed_courses')
+    manager_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     description = db.Column(db.String)
     cover_url = db.Column(db.String)
     created_time = db.Column(db.DateTime)

@@ -7,7 +7,7 @@
       <small class="form-text text-muted pb-3">
         请输课程名，如果输入的课程名称已经在本课程存在，修改无效。
       </small>
-      <input type="text" class="form-control" id="course_name" name="course_name" value={{course.name}}>
+      <input type="text" class="form-control" id="course-name" name="course_name" value="{{course.name}}">
     </div>
   </div>
   <div class="form-group">
@@ -15,10 +15,10 @@
       <small class="form-text text-muted pb-3">
         修改课程简介。
       </small>
-      <input type="text" class="form-control" id="course_description" name="course_description" value={{course.description}}>
+      <input type="text" class="form-control" id="course-description" name="course_description" value="{{course.description}}">
     </div>
   </div>
-  <div class="form-group">
+  <div class="form-group" id="CoverInputForm">
     <div class="custom-file px-2">
         <input type="file" class="custom-file-input" id="course_cover_input">
         <label class="custom-file-label" for="course_cover">点击上传封面</label>
@@ -27,7 +27,7 @@
       <div class="progress-bar bg-success" id="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
   </div>
-  <img src="" class="rounded mx-auto d-block" alt="cover" id="course_cover">
+  <img src="" class="rounded mx-auto d-none" alt="cover" id="course_cover" >
   <div class="form-group">
   <button type="submit" class="btn btn-primary" id="submitButton">保存修改</button>
   </div>
@@ -37,6 +37,14 @@
 {% block script %}
   <script src="https://unpkg.com/cos-js-sdk-v5/dist/cos-js-sdk-v5.min.js"></script>
   <script>
+    const CourseCoverInput = document.getElementById('course_cover_input');
+    const ProgressBar = document.getElementById('progress-bar');
+    const CourseCover = document.getElementById('course_cover');
+    const CoverInputForm = document.getElementById('CoverInputForm');
+    const submitButton = document.getElementById('submitButton');
+    const CourseName = document.getElementById('course-name');
+    const CourseDescription = document.getElementById('course-description');
+
     const cos = new COS({
       getAuthorization: function (options, callback) {
         $.get('/sts', {
@@ -57,14 +65,10 @@
       }
     });
 
-    const CourseCoverInput = document.getElementById('course_cover_input');
-    const ProgressBar = document.getElementById('progress-bar');
-    const CourseCover = document.getElementById('course_cover');
-
 
     CourseCoverInput.addEventListener('change', function(e){
       const postfix = this.files[0].name.split('.')[1];
-      console.log(postfix);
+      //console.log(postfix);
       const fileName="{{'course-{}.'.format(course.id)}}" + postfix;
 
       cos.putObject({
@@ -74,19 +78,52 @@
         StorageClass: 'STANDARD',
         Body: this.files[0], // 上传文件对象
         onProgress: function(progressData) {
-          console.log(progressData);
+          CoverInputForm.classList.add('d-none');
           ProgressBar.setAttribute('aria-valuenow', progressData.percent*100);
           ProgressBar.setAttribute('style', `width: ${progressData.percent*100}%`);
+          CourseCover.classList.remove('d-none');
         }
       }, function(err, data) {
       if (err) {
         console.log(err);
       }
-      CourseCover.setAttribute('src', "https://" + data.Location);
+      CourseCover.setAttribute("src", "https://" + data.Location);
 
       });
+    });
+
+    submitButton.addEventListener('click', function(e){
+      e.preventDefault();
+
+      let formData = new FormData();
+      const oldCourseName = `{{course.name}}`;
+      const oldCourseDescription = `{{course.description}}`;
+      const courseCoverUrl = CourseCover.getAttribute('src');
+
+      if (oldCourseName !== CourseName.value){
+        formData.append('course_name', CourseName.value);
+      }
+      if (oldCourseDescription !== CourseDescription.value){
+        formData.append('course_description', CourseDescription.value);
+      }
+      if (courseCoverUrl.length > 0){
+        formData.append('course_cover_url', courseCoverUrl);
+      }
+      const url = "{{'/course/{}/manage'.format(course.id)}}";
+      const courseHomeUrl = "{{'/course/{}'.format(course.id)}}";
+      fetch(url, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {return response.json()})
+      .then(data => {
+        console.log(data);
+        window.location.href = courseHomeUrl;
+        alert(data.message);
+      })
+      .catch((error) => {
+        console.log('Error:', error);
+      });
     })
-
-
   </script>
 {% endblock %}

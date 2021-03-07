@@ -22,7 +22,13 @@
       <td>
         <div class="dropdown show">
           <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {{user.status}}
+            {% if user.status == "FREEZE" %}
+              已冻结
+            {% elif user.status == "NORMAL" %}
+              正常
+            {% else %}
+              {{user.status}}
+            {% endif %}
           </a>
         
           <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
@@ -52,6 +58,7 @@
       fetch(freezeURL)
       .then(response => {return response.json()})
       .then(data => {
+        window.location.reload(false);
         alert('修改成功');
       })
       .catch((error) => {
@@ -65,6 +72,7 @@
       fetch(normalURL)
       .then(response => {return response.json()})
       .then(data => {
+        window.location.reload(false);
         alert('修改成功');
       })
       .catch((error) => {

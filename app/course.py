@@ -1,7 +1,9 @@
+import re
 from datetime import datetime
 from difflib import unified_diff
-import re
 from os import environ
+from sqlalchemy.orm.session import Session
+
 from flask import(
     Blueprint,
     render_template,
@@ -29,8 +31,13 @@ from app.models import(
     Version,
 )
 
-course_bp = Blueprint('course_bp', __name__,template_folder='./templates/course')
+course_bp = Blueprint('course_bp', __name__,
+                      template_folder='./templates/course')
 
+def is_course_admin(user):
+    if hasattr(user, 'id'):
+        return (current_user.id == course.manager_id) or (current_user.id == 8)
+    return False
 
 @course_bp.route('/course/<course_id>')
 def course(course_id):
@@ -48,34 +55,22 @@ def course(course_id):
 
     course = Course.query.get(course_id)
     current_chapter = course.first_chapter
-    # chapters_raw = Chapter.query.filter(Chapter.course_id == course_id).all()
-    chapters=[]
+    chapters = []
     while current_chapter:
         chapters.append({
             'name': current_chapter.name,
             'notes': current_chapter.notes,
             'id': current_chapter.id,
-            # 'url': f'/course/{course_Vid}/chapter/{current_chapter.id}',
-            # 'new_chapter_url': f'/course/{course_id}/chapter/{current_chapter.id}/new',
-            # 'pull_requests_url': f'/course/{course_id}/chapter/{current_chapter.id}/prs',
-            # 'edit_name_url': f'/course/{course_id}/chapter/{current_chapter.id}/edit'
         })
         current_chapter = current_chapter.next_chapter
-    # for chapter_raw in chapters_raw:
-    #     chapters.append({
-    #         'name': chapter_raw.name,
-    #         'notes': chapter_raw.notes,
-    #         'url': f'/course/{course_id}/chapter/{chapter_raw.id}',
-    #         'new_chapter_url': f'/course/{course_id}/chapter/{chapter_raw.id}/new',
-    #         'pull_requests_url': f'/course/{course_id}/chapter/{chapter_raw.id}/prs',
-    #         'edit_name_url': f'/course/{course_id}/chapter/{chapter_raw.id}/edit'
-    #     })
+
     return render_template(
         'course.html',
         title=course.name,
-        course_id = course_id,
-        chapters=chapters
-        )
+        course_id=course_id,
+        chapters=chapters,
+        is_course_admin = is_course_admin(current_user)
+    )
 
 
 @course_bp.route('/sts')
@@ -128,6 +123,7 @@ def sts():
             error=e
         )
 
+
 @course_bp.route('/course/new', methods=['GET', 'POST'])
 def new_course():
     '''
@@ -157,7 +153,7 @@ def new_course():
             db.session.add(first_version)
             db.session.flush()
             db.session.refresh(first_version)
-            
+
             first_chapter = Chapter(
                 name='Introduction',
                 notes=f'Get started with {course_name}',
@@ -169,16 +165,23 @@ def new_course():
             course = Course(
                 name=course_name,
                 description=course_description,
-                managers=user, # require list
+                #managers=user,  # require list
                 created_time=datetime.now(),
                 first_chapter=first_chapter
             )
             db.session.add(course)
-            db.session.commit()
-            flash(f'Create course {course_name} Success.')
+            db.session.flush()
+            db.session.refresh(course)
 
-            # get course id for the new course
-            course = Course.query.filter(Course.name == course_name).first()
+            course_manger = CourseManager(
+                course_id = course.id,
+                user_id = current_user.id,
+                is_present = True
+            )
+            db.session.add(course_manger)
+            db.session.commit()
+            #flash(f'Create course {course_name} Success.')
+
             return redirect(f'/course/{course.id}')
         else:
             flash(f'{course_name} aready exist.')
@@ -186,17 +189,35 @@ def new_course():
     else:
         return render_template('new_course.html')
 
-@course_bp.route('/course/<course_id>/manage')
+
+@course_bp.route('/course/<course_id>/manage', methods=['GET', 'POST'])
 def manage_course(course_id):
     if request.method == 'POST':
-        pass
+        course = Course.query.get(course_id)
+        new_name = request.form.get('course_name')
+        new_description = request.form.get('course_description')
+        new_url = request.form.get('course_cover_url')
+        if new_name:
+            is_new_name_exists = Course.query.filter(Course.name == new_name).first()
+            if not is_new_name_exists:
+                course.name = new_name
+        
+        if new_description:
+            course.description = new_description
+        if new_url:
+            course.cover_url = new_url
+        db.session.commit()
+        return jsonify(
+            message="Success."
+        )
     else:
         course = Course.query.get(course_id)
         return render_template(
             'manage_course.html',
             title="manage course",
             course=course
-            )
+        )
+
 
 @course_bp.route('/course/<course_id>/chapter/<chapter_id>')
 def chapter(course_id, chapter_id):
@@ -216,13 +237,13 @@ def chapter(course_id, chapter_id):
     return render_template(
         'chapter.html',
         title=chapter.name,
-        course_id = course_id,
-        chapter_id = chapter_id,
-        content = latest_version.content
-        )
+        course_id=course_id,
+        chapter_id=chapter_id,
+        content=latest_version.content
+    )
 
 
-@course_bp.route('/course/<course_id>/chapter/<chapter_id>/manage', methods=['GET','POST'])
+@course_bp.route('/course/<course_id>/chapter/<chapter_id>/manage', methods=['GET', 'POST'])
 @login_required
 def chapter_manage(course_id, chapter_id):
     if request.method == 'POST':
@@ -230,23 +251,23 @@ def chapter_manage(course_id, chapter_id):
         chapter_notes = request.form.get('chapter_notes')
         edit_description = request.form.get('edit_description')
         edit_content = request.form.get('edit_content')
-        
+
         chapter = Chapter.query.get(chapter_id)
         if chapter_name:
             chapter.name = chapter_name
-        
+
         if chapter_notes:
             chapter.notes = chapter_notes
-        
+
         version = Version(
-            contributor_id = current_user.id,
-            description = edit_description,
-            created_time = datetime.now(),
-            status = 'ACCEPTED',
-            content = edit_content,
-            previous_version_id = chapter.latest_version.id,
-            chapter_id = chapter_id,
-            course_id = course_id
+            contributor_id=current_user.id,
+            description=edit_description,
+            created_time=datetime.now(),
+            status='ACCEPTED',
+            content=edit_content,
+            previous_version_id=chapter.latest_version_id,
+            chapter_id=chapter_id,
+            course_id=course_id
         )
 
         db.session.add(version)
@@ -255,19 +276,21 @@ def chapter_manage(course_id, chapter_id):
         chapter.latest_version_id = version.id
         db.session.commit()
 
-
         return jsonify(
             message=f'{chapter_name} update success.'
         )
 
     else:
         chapter = Chapter.query.get(chapter_id)
+        latest_version = Version.query.get(chapter.latest_version_id)
         return render_template(
             'chapter_manage.html',
-            title = '章节管理',
-            course_id = course_id,
-            chapter = chapter
+            title='章节管理',
+            course_id=course_id,
+            chapter=chapter,
+            latest_version=latest_version
         )
+
 
 @course_bp.route('/course/<course_id>/chapter/<chapter_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -276,12 +299,12 @@ def edit_chapter(course_id, chapter_id):
     Change name or content about a chapter.
     The changes will be posted to Stage.
     '''
-    chapter = Chapter.query.get(chapter_id)
     if request.method == 'POST':
+        chapter = Chapter.query.get(chapter_id)
         content = request.form.get('edit_content')
         description = request.form.get('edit_description')
         version = Version(
-            description=description or '做了一些修改',
+            description=description,
             created_time=datetime.now(),
             content=content,
             status='OPEN',
@@ -297,26 +320,33 @@ def edit_chapter(course_id, chapter_id):
             chapter_url=f'/course/{course_id}/chapter/{chapter_id}'
         )
     else:
+        chapter = Chapter.query.get(chapter_id)
+        latest_version = Version.query.get(chapter.latest_version_id)
         return render_template(
             'edit_chapter.html',
             title='Edit',
+            course_id=course_id,
             contents_url=f'/course/{course_id}',
             edit_action_url=f'/course/{course_id}/chapter/{chapter_id}/edit',
-            chapter=chapter
+            chapter=chapter,
+            latest_version=latest_version
         )
-       
-def get_diff(old_content:str, new_content:str):
+
+
+def get_diff(old_content: str, new_content: str):
     return '<br>'.join(list(unified_diff(old_content.splitlines(True), new_content.splitlines(True), fromfile='old', tofile='new', lineterm='')))
+
 
 @course_bp.route('/course/<course_id>/chapter/<chapter_id>/prs')
 def pull_requests(course_id, chapter_id):
     '''
     Contributor's change will list here.
     '''
-    versions = Version.query.filter(db.and_(Version.chapter_id==chapter_id, Version.status=='OPEN'))
+    versions = Version.query.filter(
+        db.and_(Version.chapter_id == chapter_id, Version.status == 'OPEN'))
     latest_version_id = Chapter.query.get(chapter_id).latest_version_id
     latest_version = Version.query.get(latest_version_id)
-    prs=[]
+    prs = []
     for version in versions:
         prs.append({
             'accept_url': f'/course/{course_id}/chapter/{chapter_id}/prs/{version.id}/accept',
@@ -333,6 +363,7 @@ def pull_requests(course_id, chapter_id):
         prs=prs
     )
 
+
 @course_bp.route('/course/<course_id>/chapter/<chapter_id>/prs/<version_id>/accept')
 def accept_version(course_id, chapter_id, version_id):
     version = Version.query.get(version_id)
@@ -347,9 +378,10 @@ def accept_version(course_id, chapter_id, version_id):
 @course_bp.route('/course/<course_id>/chapter/<chapter_id>/prs/<version_id>/reject')
 def reject_version(course_id, chapter_id, version_id):
     version = Version.query.get(version_id)
-    version.status='REJECTED'
+    version.status = 'REJECTED'
     db.session.commit()
     return redirect(f'/course/{course_id}/chapter/{chapter_id}/prs')
+
 
 @course_bp.route('/course/<course_id>/chapter/<chapter_id>/new', methods=['GET', 'POST'])
 def new_chapter(course_id, chapter_id):
@@ -371,7 +403,8 @@ def new_chapter(course_id, chapter_id):
         current_chapter = Chapter.query.get(chapter_id)
 
         # Note: chapter name in a course is unique, but not unique in database.
-        chapter_with_name = Chapter.query.filter(db.and_(Chapter.course_id==course_id, Chapter.name==new_chapter_name))
+        chapter_with_name = Chapter.query.filter(
+            db.and_(Chapter.course_id == course_id, Chapter.name == new_chapter_name))
         if new_chapter_name == chapter_with_name:
             return redirect(f'/course/{course_id}/chapter/{chapter_with_name.id}')
 
@@ -413,4 +446,3 @@ def new_chapter(course_id, chapter_id):
             'new_chapter.html',
             new_chapter_url=f'/course/{course_id}/chapter/{chapter_id}/new'
         )
-

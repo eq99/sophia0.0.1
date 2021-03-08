@@ -1,7 +1,10 @@
 import logging
-import json
+import random
+import string
+import smtplib
+from email.mime.text import MIMEText
+from os import environ
 from datetime import datetime
-from urllib.request import urlopen
 
 from flask import (
     Blueprint,
@@ -12,18 +15,16 @@ from flask import (
     url_for,
     flash
 )
-
 from flask_login import (
     login_user,
     current_user,
     login_required,
     logout_user
 )
-
 from plugins import (
     db,
     cache,
-    login_manager
+    login_manager,
 )
 from app.models import User
 
@@ -39,9 +40,29 @@ login_manager.login_view='/login'
 @login_manager.user_loader
 def load_user(user_id):
     if user_id is not None:
-        return User.query.get(user_id)
+        return User.query.get(int(user_id))
     else:
         return None
+
+
+def generate_code():
+    return ''.join(random.sample(string.digits, 6))
+
+def send_email(receiver, html_content=None):
+    sender = environ.get('MAIL_USERNAME')
+    msg = MIMEText(html_content, 'html') 
+    msg['subject'] = '路课网验证码' 
+    msg['from'] = sender
+    msg['to'] = receiver  
+    try:
+        # Port of SMTP_SSL service is 465
+	    s = smtplib.SMTP_SSL(environ.get('MAIL_SERVER'), 465)  
+	    s.login(sender, environ.get('MAIL_PASSWORD'))  
+	    s.sendmail(sender, receiver, msg.as_string().encode("utf-8"))
+	    return 'Success'
+    except smtplib.SMTPException:
+	    return 'Failed'
+
 
 @user_bp.route('/code', methods=['GET', 'POST'])
 def sendcode():
@@ -55,19 +76,14 @@ def sendcode():
                 message='Error',
                 code=206
             )
-        print(email)
-        cache.set(email, '1234')
+        code = generate_code()
+        send_email(email, f'<p>你的验证码是:</p><h1>{code}</h1> 十分钟内有效')
+        cache.set(email, code)
         return jsonify(
-            message=f'Success{email}',
+            message=f'Success',
             code=200
         )
 
-def generate_avatar():
-    '''
-    see http://api.btstu.cn/doc/sjtx.php for more details.
-    '''
-    res = urlopen('http://api.btstu.cn/sjtx/api.php?lx=c1&format=json')
-    return json.loads(res.read())['imgurl']
 
 @user_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -76,28 +92,23 @@ def register():
     Sigin in: when the user is already registed.
     '''
     if request.method == 'POST':
-        phone = request.form.get('phone')
-        smscode = request.form.get('smscode')
-        if smscode == cache.get(phone):
-            user = User.query.filter(User.phone == phone).first()
+        email = request.form.get('email')
+        code = request.form.get('code')
+        password = request.form.get('password')
+        if code == cache.get(email):
+            user = User.query.filter(User.email == email).first()
             if user is None:
-                user = User(
-                    phone = phone,
-                    nickname=f'用戶{phone}',
-                    avatar_url=generate_avatar(),
-                    reputation=0.0,
-                    created_time=datetime.now()
-                )
+                user = User(email=email, password=password)
                 db.session.add(user)
                 db.session.commit()
-            print(user, user.id)
+                db.session.refresh(user)
             login_user(user)
-            return redirect('/profile')
+            return redirect('/user/{user.id}')
         else:
-            return render_template(
-                'signin.html',
-                title='Sign In'
-                )
+            return jsonify(
+                code=406,
+                message="验证码错误"
+            )
 
     return render_template(
         'register.html',
@@ -107,22 +118,45 @@ def register():
 @user_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # login
-        pass
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter(User.email == email).first()
+
+        if not user:
+            flash("未注册的邮箱, 请在此注册")
+            return redirect('/register')
+        
+        if not user.check_password(password):
+            flash("密码错误")
+            return redirect('/login')
+        login_user(user)
+        return redirect(f'/user/{user.id}')
     else:
         return render_template(
             'login.html',
             title='欢迎回来'
         )
 
-@user_bp.route('/profile')
-@login_required
-def profile():
+@user_bp.route('/user/<user_id>')
+def profile(user_id):
+    user = User.query.get(user_id)
+
+    if not user:
+        flash("查无此人")
+        return redirect('/')
+
+    current_user_id = current_user.id if hasattr(current_user, 'id') else None
     return render_template(
         'profile.html',
         title='My profile',
-        current_user=current_user,
+        user=user,
+        current_user_id=current_user_id
     )
+
+@user_bp.route("/me")
+@login_required
+def me():
+    return redirect(f'/user/{current_user.id}')
 
 @user_bp.route('/profile/edit', methods=['GET', 'POST'])
 @login_required

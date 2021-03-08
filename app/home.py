@@ -20,5 +20,5 @@ def home():
         'home.html',
         title='Book list',
         courses=courses,
-        is_admin=hasattr(current_user, 'id') and (current_user.id==8)
+        is_admin=hasattr(current_user, 'id') and (current_user.id==13),
         )

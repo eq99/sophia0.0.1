@@ -34,9 +34,9 @@ from app.models import(
 course_bp = Blueprint('course_bp', __name__,
                       template_folder='./templates/course')
 
-def is_course_admin(user):
+def is_course_admin(user, manager_id):
     if hasattr(user, 'id'):
-        return (current_user.id == course.manager_id) or (current_user.id == 8)
+        return (current_user.id == manager_id) or (current_user.id == 8)
     return False
 
 @course_bp.route('/course/<course_id>')
@@ -69,7 +69,7 @@ def course(course_id):
         title=course.name,
         course_id=course_id,
         chapters=chapters,
-        is_course_admin = is_course_admin(current_user)
+        is_course_admin = is_course_admin(current_user, course.manager_id)
     )
 
 

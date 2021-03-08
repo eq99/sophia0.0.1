@@ -15,3 +15,8 @@ This is only a skelon project, any fucntion is not implement.
 
 slide verify :
 https://www.jq22.com/jquery-info19009
+
+
+# DataBase
+email: nullable =False
+password_hash: nullable =False

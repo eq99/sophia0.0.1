@@ -1,7 +1,18 @@
+import json
+from datetime import datetime
 from enum import Enum
+from urllib.request import urlopen
 from sqlalchemy.orm import backref, defaultload
 from plugins import db
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
+def generate_avatar():
+    '''
+    see http://api.btstu.cn/doc/sjtx.php for more details.
+    '''
+    res = urlopen('http://api.btstu.cn/sjtx/api.php?lx=c1&format=json')
+    return json.loads(res.read())['imgurl']
 
 
 # class CourseManager(db.Model):
@@ -19,18 +30,39 @@ from flask_login import UserMixin
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(32), index=True, unique=True, nullable=False)
+    email = db.Column(db.String(64), index=True, unique=True)
+    password_hash = db.Column(db.String, index=True, nullable=False)
     avatar_url = db.Column(db.String)
     gender = db.Column(db.Boolean, default=False) # True: male; Flase: female
     reputation = db.Column(db.Float, default=0.0)
     school = db.Column(db.String)
-    phone = db.Column(db.String(11), index=True, unique=True, nullable=False)
-
     # this field can also be used as `role`
     status = db.Column(db.String) # 'NORMAL', 'ADMIN', 'FREEZE'
-    
     created_time = db.Column(db.DateTime)
     # managed_courses = db.relationship('Course', secondary=course_managers, back_populates='managers')
     contributes = db.relationship('Version', backref='contributor')
+
+    def __init__(self, email, password):
+        self.nickname = f'学霸 {email}'
+        self.email = email
+        self.password_hash = generate_password_hash(password)
+        self.avatar_url = generate_avatar()
+        self.gender = False
+        self.reputation = 0.0
+        self.school = None
+        self.status = 'NORMAL'
+        self.created_time = datetime.now()
+
+    @property
+    def password(self):
+        raise AttributeError('Password can not access')
+    
+    @password.setter
+    def password(self, value):
+        self.password_hash = generate_password_hash(value)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def is_active(self):
         return self.is_active

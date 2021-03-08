@@ -7,13 +7,13 @@
       <small id="passwordHelpBlock" class="form-text text-muted">
         请填写有效的邮箱, 我们会向此邮箱发送验证码.
       </small>
-      <input type="email" class="form-control" name="email" id="email" placeholder="请填写邮箱">
+      <input type="email" class="form-control" name="email" id="email" placeholder="请填写邮箱" required>
     </div>
   </div>
 
   <div class="form-group row">
     <div class="input-group mb-3 col-sm-10">
-      <input type="text" class="form-control" name="code" id="code" placeholder="请填写验证码" aria-label="code" aria-describedby="basic-addon2">
+      <input type="text" class="form-control" name="code" id="code" placeholder="请填写验证码" required aria-label="code" aria-describedby="basic-addon2">
       <div class="input-group-append">
         <button class="btn btn-outline-secondary" id="code-send-button" type="button">发送验证码到邮箱</button>
       </div>
@@ -21,16 +21,16 @@
   </div>
   <div class="form-group row">
     <div class="col-sm-10">
-      <input type="password" class="form-control" name="password" id="password" placeholder="密码">
+      <input type="password" class="form-control" name="password" id="password" placeholder="密码" required>
     </div>
   </div>
   <div class="form-group row">
     <div class="col-sm-10">
-      <input type="password" class="form-control" name="confirm-password" id="confirm-password" placeholder="确认密码">
+      <input type="password" class="form-control" name="confirm-password" id="confirm-password" placeholder="确认密码" required>
     </div>
   </div>
   <div class="form-group row">
-      <button type="submit" class="btn btn-primary col-sm-10" id='submit-button'>注册</button>
+      <button type="submit" class="btn btn-primary col-sm-10" id='submit-button' disabled>注册</button>
   </div>
 </form>
 {% endblock %}
@@ -43,15 +43,26 @@
     const PasswordInput = document.getElementById('password');
     const ConfirmPasswordInput = document.getElementById('confirm-password');
     const CodeSendButton = document.getElementById('code-send-button');
-    const EmailInfo = document.getElementById('email-info');
-
-    function insertAfter(referenceNode, newNode) {
-      referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-    }
+    const SubmiteButton = document.getElementById('submit-button');
+    
+    let waitTime = 75 // second
 
     CodeSendButton.addEventListener("click", function (e) {
       e.preventDefault();
-
+      CodeSendButton.setAttribute('disabled', '');
+      
+      const timer = setInterval(function(){
+        if(waitTime === 0){
+          clearInterval(timer);
+          waitTime = 75;
+          CodeSendButton.innerHTML='再次发送';
+          CodeSendButton.removeAttribute('disabled');
+        }else{
+          waitTime -= 1;
+          CodeSendButton.innerHTML=`${waitTime}S后重新发送`
+        }
+      }, 1000);
+      
       let formData = new FormData();
       formData.append('email', EmailInput.value);
       fetch('/code', {
@@ -70,7 +81,42 @@
       .catch((error) => {
         console.log('Error:', error);
       });
+    });
 
+    ConfirmPasswordInput.addEventListener("input", function(e){
+      e.preventDefault();
+
+      if(PasswordInput.value === ConfirmPasswordInput.value){
+        SubmiteButton.removeAttribute('disabled');
+        ConfirmPasswordInput.classList.add('is-valid');
+        ConfirmPasswordInput.classList.remove('is-invalid');
+      }else{
+        ConfirmPasswordInput.classList.add('is-invalid');
+      }
+    });
+
+    SubmiteButton.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      let formData = new FormData();
+      formData.append('email', EmailInput.value);
+      formData.append('code', CodeInput.value);
+      formData.append('password', ConfirmPasswordInput.value);
+      fetch('/register', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {return response.json()})
+      .then(data => {
+        if (data.code === 200){
+          alert("注册成功");
+        }else{
+          alert(`注册失败: ${data.message}`);
+        }
+      })
+      .catch((error) => {
+        alert(`注册失败: ${data.message}`);
+      });
     });
 	</script>
 {% endblock %}

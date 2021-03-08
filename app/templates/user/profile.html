@@ -1,4 +1,5 @@
 {% extends 'base.html' %} {% block nav %}
+{% if user.id == current_user_id %}
 <li class="nav-item">
   <a class="nav-link" href="/profile/edit">
     <svg
@@ -41,14 +42,15 @@
     退出登录
   </a>
 </li>
+{% endif %}
 {% endblock %}
 
 {% block article %}
 <div class="row">
   <img class="float-left" src={{current_user.avatar_url}} alt="avatar" height="128" />
   <div class="col">
-    <h4>{{current_user.nickname}}</h4>
-    {% if current_user.gender %}
+    <h4>{{user.nickname}}</h4>
+    {% if user.gender %}
     <svg
       width="1rem"
       aria-hidden="true"
@@ -89,7 +91,7 @@
     </div>
     <div class="row ml-1">
       <strong>学分:&nbsp;</strong>
-      {{current_user.reputation}}
+      {{user.reputation}}
     </div>
   </div>
 </div>

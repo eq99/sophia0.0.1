@@ -3,6 +3,7 @@ from datetime import datetime
 from difflib import unified_diff
 from os import environ
 from sqlalchemy.orm.session import Session
+from markdown import markdown
 
 from flask import(
     Blueprint,
@@ -239,7 +240,7 @@ def chapter(course_id, chapter_id):
         title=chapter.name,
         course_id=course_id,
         chapter_id=chapter_id,
-        content=latest_version.content
+        content=markdown(latest_version.content, extensions=['fenced_code','codehilite'])
     )
 
 
